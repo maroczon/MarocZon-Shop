@@ -1,4 +1,12 @@
 
+export interface Review {
+  id: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -10,6 +18,9 @@ export interface Product {
   location: string;
   category: string;
   salesCount: number;
+  rating?: number;
+  reviewCount?: number;
+  reviews?: Review[];
 }
 
 export interface Category {

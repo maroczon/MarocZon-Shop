@@ -8,7 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 // Simple in-memory cache to prevent redundant API calls
 const pitchCache: Record<string, string> = {};
 
-// Localized Fallbacks for when API quota is exhausted (Error 429)
+// Localized Fallbacks for when API quota is exhausted (Error 429) or Forbidden (Error 403)
 const fallbacks: Record<string, string> = {
   ar: "منتجات عالية الجودة بأسعار تنافسية للجملة. تواصل معنا للمزيد.",
   en: "High-quality products at competitive wholesale prices. Contact us for details.",
@@ -28,8 +28,9 @@ export const generateSellerPitch = async (productName: string, language: string 
 
   const ai = getAI();
   try {
+    // Using 'gemini-flash-latest' for broader availability and to avoid 403 errors with preview models
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       contents: `You are a professional B2B marketing expert. Write a short, persuasive sales pitch for the product: "${productName}". 
       Target wholesalers and bulk buyers on the MarocZon marketplace.
       Respond ONLY with the pitch text in ${language === 'ar' ? 'Arabic' : language === 'fr' ? 'French' : language === 'zh' ? 'Chinese' : 'English'}.
@@ -44,9 +45,15 @@ export const generateSellerPitch = async (productName: string, language: string 
     pitchCache[cacheKey] = result;
     return result;
   } catch (error: any) {
-    // Check specifically for rate limit / quota errors
-    if (error?.message?.includes('429') || error?.status === 429 || error?.message?.includes('RESOURCE_EXHAUSTED')) {
-      console.warn(`Gemini Quota Exhausted for "${productName}". Using fallback.`);
+    // Handle Rate Limit (429) and Permission Denied (403)
+    if (
+      error?.message?.includes('429') || 
+      error?.status === 429 || 
+      error?.message?.includes('RESOURCE_EXHAUSTED') ||
+      error?.message?.includes('403') ||
+      error?.status === 403
+    ) {
+      console.warn(`Gemini API Issue for "${productName}". Using fallback.`, error.message);
       return fallbacks[language] || fallbacks['en'];
     }
     
@@ -62,7 +69,7 @@ export const getSmartSearchSuggestions = async (query: string) => {
   const ai = getAI();
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-flash-latest',
       contents: `User is searching for "${query}" on MarocZon (B2B Marketplace). Provide 3 related business categories or trending search terms. Return as a comma-separated list.`,
     });
     return response.text?.split(',').map(s => s.trim()) || [];

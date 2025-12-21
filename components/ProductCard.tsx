@@ -6,9 +6,10 @@ import { useTranslation } from '../LanguageContext';
 
 interface Props {
   product: Product;
+  onClick?: () => void;
 }
 
-const ProductCard: React.FC<Props> = ({ product }) => {
+const ProductCard: React.FC<Props> = ({ product, onClick }) => {
   const [pitch, setPitch] = useState<string>('');
   const { lang } = useTranslation();
 
@@ -17,7 +18,6 @@ const ProductCard: React.FC<Props> = ({ product }) => {
     
     const fetchPitch = async () => {
       // Add a small random delay to stagger the dozens of concurrent requests on initial load
-      // This helps stay within the "per minute" rate limits of the free tier.
       const delay = Math.random() * 3000; 
       await new Promise(resolve => setTimeout(resolve, delay));
       
@@ -33,7 +33,10 @@ const ProductCard: React.FC<Props> = ({ product }) => {
   }, [product.name, lang]);
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden border border-transparent hover:border-alibaba-orange hover:shadow-xl transition-all group flex flex-col h-full w-[180px] md:w-[220px] shrink-0">
+    <div 
+      onClick={onClick}
+      className="bg-white rounded-lg overflow-hidden border border-transparent hover:border-alibaba-orange hover:shadow-xl transition-all group flex flex-col h-full w-[180px] md:w-[220px] shrink-0 cursor-pointer"
+    >
       <div className="relative aspect-square overflow-hidden bg-gray-100">
         <img 
           src={product.imageUrl} 
@@ -41,13 +44,18 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           className="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
         />
         {product.isVerified && (
-          <div className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1 font-bold">
+          <div className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1 font-bold shadow-sm">
             <i className="fa-solid fa-check-circle"></i> VERIFIED
           </div>
         )}
-        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+        <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-bold backdrop-blur-sm">
            {product.salesCount}+ {lang === 'ar' ? 'مبيعات' : lang === 'zh' ? '销量' : 'Sales'}
         </div>
+        {product.rating && (
+          <div className="absolute bottom-2 left-2 bg-white/90 text-gray-900 text-[9px] px-1.5 py-0.5 rounded font-black flex items-center gap-1 shadow-sm">
+             <i className="fa-solid fa-star text-orange-400"></i> {product.rating}
+          </div>
+        )}
       </div>
 
       <div className="p-3 flex-grow flex flex-col">
@@ -55,8 +63,8 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           {product.name}
         </h3>
         
-        <p className="text-base md:text-lg font-bold text-gray-900 mt-1">{product.priceRange}</p>
-        <p className="text-[10px] md:text-xs text-gray-500 font-medium">MOQ: {product.moq}</p>
+        <p className="text-base md:text-lg font-black text-gray-900 mt-1">{product.priceRange}</p>
+        <p className="text-[10px] md:text-xs text-gray-500 font-bold uppercase tracking-tight">MOQ: {product.moq}</p>
 
         <div className="mt-2 border-t pt-2">
           <p className="text-[9px] uppercase font-bold text-gray-400 mb-1">
@@ -71,7 +79,7 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-gray-200 flex items-center justify-center text-[8px] md:text-[10px] font-bold text-gray-500 overflow-hidden shrink-0">
              {product.sellerName.charAt(0)}
           </div>
-          <div className="flex-grow min-w-0">
+          <div className="flex-grow min-w-0 text-left rtl:text-right">
             <p className="text-[10px] md:text-[11px] font-bold text-gray-700 hover:text-alibaba-orange cursor-pointer truncate">
               {product.sellerName}
             </p>
@@ -79,8 +87,8 @@ const ProductCard: React.FC<Props> = ({ product }) => {
           </div>
         </div>
 
-        <button className="w-full mt-3 border border-alibaba-orange text-alibaba-orange py-1 rounded-full text-[10px] md:text-xs font-bold hover:bg-alibaba-orange hover:text-white transition">
-           {lang === 'ar' ? 'تواصل مع المورد' : lang === 'zh' ? '联系供应商' : 'Contact Supplier'}
+        <button className="w-full mt-3 border-2 border-alibaba-orange text-alibaba-orange py-1.5 rounded-full text-[10px] md:text-xs font-black hover:bg-alibaba-orange hover:text-white transition uppercase tracking-wider">
+           {lang === 'ar' ? 'تواصل مع المورد' : lang === 'zh' ? '联系供应商' : 'Contact'}
         </button>
       </div>
     </div>

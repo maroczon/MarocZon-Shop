@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import QuickActions from './components/QuickActions';
@@ -11,11 +11,34 @@ import Footer from './components/Footer';
 import CategoryGrid from './components/CategoryGrid';
 import RFQSection from './components/RFQSection';
 import MoroccanSpecialties from './components/MoroccanSpecialties';
+import ShippingSection from './components/ShippingSection';
+import ProductDetailModal from './components/ProductDetailModal';
+import HostingSolutions from './components/HostingSolutions';
 import { MOCK_PRODUCTS } from './constants';
 import { useTranslation } from './LanguageContext';
+import { Product } from './types';
 
 const App: React.FC = () => {
   const { t } = useTranslation();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
+  // Persistent Wishlist State
+  const [wishlist, setWishlist] = useState<string[]>(() => {
+    const saved = localStorage.getItem('maroczon_wishlist');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('maroczon_wishlist', JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  const toggleWishlist = (productId: string) => {
+    setWishlist(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId) 
+        : [...prev, productId]
+    );
+  };
 
   // Sorting and filtering logic
   const bestSellers = [...MOCK_PRODUCTS].sort((a, b) => b.salesCount - a.salesCount).slice(0, 10);
@@ -28,6 +51,9 @@ const App: React.FC = () => {
   const sportsProducts = MOCK_PRODUCTS.filter(p => p.category === 'Sports & Activity').slice(0, 10);
   const gamesProducts = MOCK_PRODUCTS.filter(p => p.category === 'Games & Entertainment').slice(0, 10);
   const booksProducts = MOCK_PRODUCTS.filter(p => p.category === 'Books & Magazines').slice(0, 10);
+  
+  // Simulated "Ready to Ship" (Ready for immediate dispatch)
+  const readyToShipProducts = [...MOCK_PRODUCTS].filter(p => p.salesCount > 1000).slice(0, 10);
 
   const ProductSection = ({ title, products, icon }: { title: string, products: any[], icon?: string }) => (
     <div className="max-w-7xl mx-auto px-4 mt-12">
@@ -41,7 +67,11 @@ const App: React.FC = () => {
       </div>
       <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 scroll-smooth">
         {products.map(product => (
-          <ProductCard key={product.id + '-' + title} product={product} />
+          <ProductCard 
+            key={product.id + '-' + title} 
+            product={product} 
+            onClick={() => setSelectedProduct(product)}
+          />
         ))}
         {products.length >= 3 && (
           <div className="w-[180px] md:w-[220px] shrink-0 flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed rounded-lg text-gray-400 group cursor-pointer hover:border-alibaba-orange hover:text-alibaba-orange transition">
@@ -71,13 +101,24 @@ const App: React.FC = () => {
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 scroll-smooth">
             {bestSellers.map(product => (
-              <ProductCard key={product.id + '-best'} product={product} />
+              <ProductCard 
+                key={product.id + '-best'} 
+                product={product} 
+                onClick={() => setSelectedProduct(product)}
+              />
             ))}
           </div>
         </div>
 
         {/* Hero Section */}
         <Hero />
+
+        {/* Ready to Ship Section */}
+        <ProductSection 
+          title={t.readyToShip} 
+          products={readyToShipProducts} 
+          icon="fa-box-open" 
+        />
 
         {/* Category Specific Horizontal Rows */}
         <ProductSection 
@@ -125,6 +166,9 @@ const App: React.FC = () => {
         {/* Flash Deals Section */}
         <FlashDeals />
 
+        {/* Shipping Section */}
+        <ShippingSection />
+
         <ProductSection 
           title={t.categories.books} 
           products={booksProducts} 
@@ -139,6 +183,9 @@ const App: React.FC = () => {
 
         {/* Unique Value Proposition: Moroccan Specialty Products */}
         <MoroccanSpecialties />
+
+        {/* Store Hosting Solutions for Sellers */}
+        <HostingSolutions />
 
         {/* Browsing History Simulation */}
         <div className="max-w-7xl mx-auto px-4 mt-16 pb-8 border-t pt-8">
@@ -188,6 +235,16 @@ const App: React.FC = () => {
       </main>
 
       <Footer />
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <ProductDetailModal 
+          product={selectedProduct} 
+          onClose={() => setSelectedProduct(null)} 
+          isWishlisted={wishlist.includes(selectedProduct.id)}
+          onToggleWishlist={toggleWishlist}
+        />
+      )}
     </div>
   );
 };

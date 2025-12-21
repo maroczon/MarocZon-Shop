@@ -91,6 +91,10 @@ const Header: React.FC = () => {
         {/* Action Icons */}
         <div className="hidden lg:flex items-center gap-8">
           <div className="text-center cursor-pointer hover:text-alibaba-orange group">
+            <i className="fa-solid fa-heart text-xl group-hover:scale-110 transition"></i>
+            <p className="text-[10px] mt-1 font-semibold">{t.wishlist}</p>
+          </div>
+          <div className="text-center cursor-pointer hover:text-alibaba-orange group">
             <i className="fa-solid fa-comment-dots text-xl group-hover:scale-110 transition"></i>
             <p className="text-[10px] mt-1 font-semibold">{t.messages}</p>
           </div>
