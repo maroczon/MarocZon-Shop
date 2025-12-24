@@ -1,4 +1,3 @@
-
 import { GoogleGenAI } from "@google/genai";
 
 /**
@@ -28,9 +27,9 @@ export const generateSellerPitch = async (productName: string, language: string 
 
   const ai = getAI();
   try {
-    // Using 'gemini-flash-latest' for broader availability and to avoid 403 errors with preview models
+    // Using 'gemini-3-flash-preview' for basic text tasks as per recommendations
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: `You are a professional B2B marketing expert. Write a short, persuasive sales pitch for the product: "${productName}". 
       Target wholesalers and bulk buyers on the MarocZon marketplace.
       Respond ONLY with the pitch text in ${language === 'ar' ? 'Arabic' : language === 'fr' ? 'French' : language === 'zh' ? 'Chinese' : 'English'}.
@@ -69,7 +68,7 @@ export const getSmartSearchSuggestions = async (query: string) => {
   const ai = getAI();
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3-flash-preview',
       contents: `User is searching for "${query}" on MarocZon (B2B Marketplace). Provide 3 related business categories or trending search terms. Return as a comma-separated list.`,
     });
     return response.text?.split(',').map(s => s.trim()) || [];

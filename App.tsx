@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -19,7 +18,7 @@ import { useTranslation } from './LanguageContext';
 import { Product } from './types';
 
 const App: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   // Persistent Wishlist State
@@ -40,45 +39,68 @@ const App: React.FC = () => {
     );
   };
 
-  // Sorting and filtering logic
+  // Category Filtered Products
+  const categoriesList = [
+    { id: 'apparel', title: t.categories.apparel, icon: 'fa-shirt', color: 'bg-indigo-600', products: MOCK_PRODUCTS.filter(p => p.category === 'Apparel').slice(0, 8) },
+    { id: 'electronics', title: t.categories.electronics, icon: 'fa-laptop', color: 'bg-blue-600', products: MOCK_PRODUCTS.filter(p => p.category === 'Consumer Electronics').slice(0, 8) },
+    { id: 'home', title: t.categories.home, icon: 'fa-couch', color: 'bg-amber-600', products: MOCK_PRODUCTS.filter(p => p.category === 'Home Furniture').slice(0, 8) },
+    { id: 'beauty', title: t.categories.beauty, icon: 'fa-sparkles', color: 'bg-rose-500', products: MOCK_PRODUCTS.filter(p => p.category === 'Beauty & Personal Care').slice(0, 8) },
+    { id: 'sports', title: t.categories.sports, icon: 'fa-basketball', color: 'bg-emerald-600', products: MOCK_PRODUCTS.filter(p => p.category === 'Sports & Activity').slice(0, 8) },
+    { id: 'games', title: t.categories.games, icon: 'fa-gamepad', color: 'bg-purple-600', products: MOCK_PRODUCTS.filter(p => p.category === 'Games & Entertainment').slice(0, 8) },
+    { id: 'books', title: t.categories.books, icon: 'fa-book', color: 'bg-cyan-600', products: MOCK_PRODUCTS.filter(p => p.category === 'Books & Magazines').slice(0, 8) },
+  ];
+
   const bestSellers = [...MOCK_PRODUCTS].sort((a, b) => b.salesCount - a.salesCount).slice(0, 10);
-  
-  // Categorized sections
-  const apparelProducts = MOCK_PRODUCTS.filter(p => p.category === 'Apparel').slice(0, 10);
-  const electronicsProducts = MOCK_PRODUCTS.filter(p => p.category === 'Consumer Electronics').slice(0, 10);
-  const furnitureProducts = MOCK_PRODUCTS.filter(p => p.category === 'Home Furniture').slice(0, 10);
-  const beautyProducts = MOCK_PRODUCTS.filter(p => p.category === 'Beauty & Personal Care').slice(0, 10);
-  const sportsProducts = MOCK_PRODUCTS.filter(p => p.category === 'Sports & Activity').slice(0, 10);
-  const gamesProducts = MOCK_PRODUCTS.filter(p => p.category === 'Games & Entertainment').slice(0, 10);
-  const booksProducts = MOCK_PRODUCTS.filter(p => p.category === 'Books & Magazines').slice(0, 10);
-  
-  // Simulated "Ready to Ship" (Ready for immediate dispatch)
   const readyToShipProducts = [...MOCK_PRODUCTS].filter(p => p.salesCount > 1000).slice(0, 10);
 
-  const ProductSection = ({ title, products, icon }: { title: string, products: any[], icon?: string }) => (
+  // Added key and updated title type to resolve assignment errors when mapped in JSX
+  const ProductSection = ({ title, products, icon, color, categoryId }: { title: any, products: any[], icon?: string, color?: string, categoryId?: string, key?: React.Key }) => (
     <div className="max-w-7xl mx-auto px-4 mt-12">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl md:text-2xl font-black text-gray-900 flex items-center gap-3">
-          <span className="w-2 h-8 bg-alibaba-orange rounded-full"></span>
-          {icon && <i className={`fa-solid ${icon} text-alibaba-orange mr-1`}></i>}
-          {title}
-        </h2>
-        <a href="#" className="text-sm font-bold text-alibaba-orange hover:underline">{t.viewAll} <i className="fa-solid fa-chevron-right ml-1"></i></a>
-      </div>
-      <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 scroll-smooth">
-        {products.map(product => (
-          <ProductCard 
-            key={product.id + '-' + title} 
-            product={product} 
-            onClick={() => setSelectedProduct(product)}
-          />
-        ))}
-        {products.length >= 3 && (
-          <div className="w-[180px] md:w-[220px] shrink-0 flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed rounded-lg text-gray-400 group cursor-pointer hover:border-alibaba-orange hover:text-alibaba-orange transition">
-            <i className="fa-solid fa-circle-plus text-3xl mb-2 group-hover:scale-110 transition"></i>
-            <span className="font-bold text-sm">{t.loadMore}</span>
+      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+        {/* Section Header */}
+        <div className="flex items-center justify-between p-4 md:p-6 border-b">
+          <h2 className="text-xl md:text-2xl font-black text-gray-900 flex items-center gap-3">
+            <div className={`w-10 h-10 ${color || 'bg-alibaba-orange'} rounded-xl flex items-center justify-center text-white shadow-sm`}>
+              {icon && <i className={`fa-solid ${icon}`}></i>}
+            </div>
+            {title}
+          </h2>
+          <a href="#" className="text-sm font-bold text-alibaba-orange hover:underline flex items-center gap-1">
+            {t.viewAll} <i className={`fa-solid fa-chevron-${lang === 'ar' ? 'left' : 'right'} text-[10px]`}></i>
+          </a>
+        </div>
+
+        {/* Horizontal Row Content */}
+        <div className="flex p-4 md:p-6 gap-6 overflow-x-auto no-scrollbar scroll-smooth">
+          {/* Leading Highlight Card (Alibaba Style) */}
+          <div className={`hidden md:flex w-[200px] shrink-0 flex-col rounded-xl p-5 ${color || 'bg-alibaba-orange'} text-white relative overflow-hidden group cursor-pointer`}>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition duration-500">
+               <i className={`fa-solid ${icon} text-[120px]`}></i>
+            </div>
+            <p className="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">{t.sourceByCategory}</p>
+            <h3 className="text-lg font-black leading-tight mb-4">{title}</h3>
+            <button className="mt-auto bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold py-2 px-4 rounded-full self-start hover:bg-white/40 transition">
+              {t.startSourcing}
+            </button>
           </div>
-        )}
+
+          {/* Products List */}
+          {products.map(product => (
+            <ProductCard 
+              key={product.id + '-' + categoryId} 
+              product={product} 
+              onClick={() => setSelectedProduct(product)}
+            />
+          ))}
+          
+          {/* See More Card */}
+          {products.length >= 3 && (
+            <div className="w-[180px] md:w-[220px] shrink-0 flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed rounded-xl text-gray-400 group cursor-pointer hover:border-alibaba-orange hover:text-alibaba-orange transition">
+              <i className="fa-solid fa-circle-plus text-3xl mb-2 group-hover:scale-110 transition"></i>
+              <span className="font-bold text-sm">{t.loadMore}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -96,7 +118,7 @@ const App: React.FC = () => {
               {t.bestSellers}
               <span className="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold ml-2">{t.hot}</span>
             </h2>
-            <a href="#" className="text-sm font-bold text-alibaba-orange hover:underline">{t.viewRank} <i className="fa-solid fa-chevron-right ml-1"></i></a>
+            <a href="#" className="text-sm font-bold text-alibaba-orange hover:underline">{t.viewRank} <i className={`fa-solid fa-chevron-${lang === 'ar' ? 'left' : 'right'} ml-1`}></i></a>
           </div>
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 scroll-smooth">
@@ -113,69 +135,47 @@ const App: React.FC = () => {
         {/* Hero Section */}
         <Hero />
 
-        {/* Ready to Ship Section */}
-        <ProductSection 
-          title={t.readyToShip} 
-          products={readyToShipProducts} 
-          icon="fa-box-open" 
-        />
-
-        {/* Category Specific Horizontal Rows */}
-        <ProductSection 
-          title={t.categories.apparel} 
-          products={apparelProducts} 
-          icon="fa-shirt" 
-        />
-
-        <ProductSection 
-          title={t.categories.electronics} 
-          products={electronicsProducts} 
-          icon="fa-laptop" 
-        />
-        
-        {/* Quick Actions */}
+        {/* Quick Actions Navigation Row */}
         <QuickActions />
 
-        <ProductSection 
-          title={t.categories.home} 
-          products={furnitureProducts} 
-          icon="fa-couch" 
-        />
+        {/* Ready to Ship (Standard Alibaba Section) */}
+        <div className="max-w-7xl mx-auto px-4 mt-12">
+           <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                 <i className="fa-solid fa-box-open text-alibaba-orange"></i>
+                 {t.readyToShip}
+              </h3>
+              <a href="#" className="text-sm font-bold text-alibaba-orange hover:underline">{t.viewAll}</a>
+           </div>
+           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+              {readyToShipProducts.map(p => (
+                <ProductCard key={p.id + '-ready'} product={p} onClick={() => setSelectedProduct(p)} />
+              ))}
+           </div>
+        </div>
 
-        <ProductSection 
-          title={t.categories.beauty} 
-          products={beautyProducts} 
-          icon="fa-sparkles" 
-        />
+        {/* Category Rows Section (Requested: Apparel, Electronics, Home, Beauty, Sports, Games, Books) */}
+        {categoriesList.map(cat => (
+          <ProductSection 
+            key={cat.id}
+            title={cat.title}
+            products={cat.products}
+            icon={cat.icon}
+            color={cat.color}
+            categoryId={cat.id}
+          />
+        ))}
 
-        {/* RFQ Center */}
+        {/* RFQ Center - Demand Generation */}
         <RFQSection />
-
-        <ProductSection 
-          title={t.categories.sports} 
-          products={sportsProducts} 
-          icon="fa-basketball" 
-        />
-
-        <ProductSection 
-          title={t.categories.games} 
-          products={gamesProducts} 
-          icon="fa-gamepad" 
-        />
 
         {/* Flash Deals Section */}
         <FlashDeals />
 
-        {/* Shipping Section */}
+        {/* Shipping & Logistics Section */}
         <ShippingSection />
 
-        <ProductSection 
-          title={t.categories.books} 
-          products={booksProducts} 
-          icon="fa-book" 
-        />
-
-        {/* Category Visual Grid */}
+        {/* Category Visual Grid - Exploration */}
         <CategoryGrid />
 
         {/* Trusted Sellers Section */}
