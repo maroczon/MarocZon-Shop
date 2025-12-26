@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
@@ -13,6 +14,7 @@ import MoroccanSpecialties from './components/MoroccanSpecialties';
 import ShippingSection from './components/ShippingSection';
 import ProductDetailModal from './components/ProductDetailModal';
 import HostingSolutions from './components/HostingSolutions';
+import ActivationModal from './components/ActivationModal';
 import { MOCK_PRODUCTS } from './constants';
 import { useTranslation } from './LanguageContext';
 import { Product } from './types';
@@ -20,6 +22,10 @@ import { Product } from './types';
 const App: React.FC = () => {
   const { t, lang } = useTranslation();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isActivationOpen, setIsActivationOpen] = useState(false);
+  const [isActivated, setIsActivated] = useState(() => {
+    return localStorage.getItem('maroczon_activated') === 'true';
+  });
   
   // Persistent Wishlist State
   const [wishlist, setWishlist] = useState<string[]>(() => {
@@ -39,6 +45,11 @@ const App: React.FC = () => {
     );
   };
 
+  const handleActivationSuccess = () => {
+    setIsActivated(true);
+    localStorage.setItem('maroczon_activated', 'true');
+  };
+
   // Category Filtered Products
   const categoriesList = [
     { id: 'apparel', title: t.categories.apparel, icon: 'fa-shirt', color: 'bg-indigo-600', products: MOCK_PRODUCTS.filter(p => p.category === 'Apparel').slice(0, 8) },
@@ -53,7 +64,6 @@ const App: React.FC = () => {
   const bestSellers = [...MOCK_PRODUCTS].sort((a, b) => b.salesCount - a.salesCount).slice(0, 10);
   const readyToShipProducts = [...MOCK_PRODUCTS].filter(p => p.salesCount > 1000).slice(0, 10);
 
-  // Added key and updated title type to resolve assignment errors when mapped in JSX
   const ProductSection = ({ title, products, icon, color, categoryId }: { title: any, products: any[], icon?: string, color?: string, categoryId?: string, key?: React.Key }) => (
     <div className="max-w-7xl mx-auto px-4 mt-12">
       <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
@@ -107,7 +117,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f7f8fa] text-gray-900 overflow-x-hidden pb-12">
-      <Header />
+      <Header 
+        onOpenActivation={() => setIsActivationOpen(true)} 
+        isActivated={isActivated}
+      />
       
       <main>
         {/* Top Section: Best Sellers */}
@@ -245,6 +258,13 @@ const App: React.FC = () => {
           onToggleWishlist={toggleWishlist}
         />
       )}
+
+      {/* Account Activation Modal */}
+      <ActivationModal 
+        isOpen={isActivationOpen}
+        onClose={() => setIsActivationOpen(false)}
+        onSuccess={handleActivationSuccess}
+      />
     </div>
   );
 };

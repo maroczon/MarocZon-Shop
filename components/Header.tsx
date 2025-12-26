@@ -3,7 +3,12 @@ import React, { useState } from 'react';
 import { useTranslation } from '../LanguageContext';
 import { Language } from '../translations';
 
-const Header: React.FC = () => {
+interface Props {
+  onOpenActivation?: () => void;
+  isActivated?: boolean;
+}
+
+const Header: React.FC<Props> = ({ onOpenActivation, isActivated = false }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'suppliers'>('products');
   const { lang, setLang, t } = useTranslation();
   const [showLangs, setShowLangs] = useState(false);
@@ -50,7 +55,16 @@ const Header: React.FC = () => {
             )}
           </div>
 
-          <div className="flex gap-2 ml-2">
+          <div className="flex gap-2 ml-2 items-center">
+            {!isActivated && (
+              <button 
+                onClick={onOpenActivation}
+                className="bg-red-50 text-red-600 px-2 py-0.5 rounded border border-red-100 font-bold hover:bg-red-100 transition flex items-center gap-1"
+              >
+                <i className="fa-solid fa-circle-exclamation text-[10px]"></i>
+                {t.activateAccount}
+              </button>
+            )}
             <button className="hover:text-alibaba-orange font-semibold">{t.signIn}</button>
             <span className="text-gray-300">|</span>
             <button className="hover:text-alibaba-orange font-semibold">{t.joinFree}</button>
@@ -90,13 +104,14 @@ const Header: React.FC = () => {
 
         {/* Action Icons */}
         <div className="hidden lg:flex items-center gap-8">
-          <div className="text-center cursor-pointer hover:text-alibaba-orange group">
+          <div className="text-center cursor-pointer hover:text-alibaba-orange group relative">
             <i className="fa-solid fa-heart text-xl group-hover:scale-110 transition"></i>
             <p className="text-[10px] mt-1 font-semibold">{t.wishlist}</p>
           </div>
-          <div className="text-center cursor-pointer hover:text-alibaba-orange group">
+          <div className="text-center cursor-pointer hover:text-alibaba-orange group relative">
             <i className="fa-solid fa-comment-dots text-xl group-hover:scale-110 transition"></i>
             <p className="text-[10px] mt-1 font-semibold">{t.messages}</p>
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
           </div>
           <div className="text-center cursor-pointer hover:text-alibaba-orange group">
             <i className="fa-solid fa-cart-shopping text-xl group-hover:scale-110 transition"></i>
@@ -105,6 +120,7 @@ const Header: React.FC = () => {
           <div className="text-center cursor-pointer hover:text-alibaba-orange group">
             <i className="fa-solid fa-user text-xl group-hover:scale-110 transition"></i>
             <p className="text-[10px] mt-1 font-semibold">{t.myAccount}</p>
+            {!isActivated && <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>}
           </div>
         </div>
       </div>
